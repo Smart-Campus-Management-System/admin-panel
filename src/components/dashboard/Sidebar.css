@@ -1,0 +1,26 @@
+.log-out{
+    width: 100%;
+    border-radius: 10px;
+}
+
+
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background-color: #4B5563;
+    border-radius: 5px;
+
+}
+
+.sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: #4B5563 transparent;
+}

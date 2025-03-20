@@ -1,0 +1,7 @@
+.main {
+    width: 100%;
+    background: linear-gradient(-45deg, #1a1d28, #2a2d3a, #3e495d, #1f2937);
+    border-color: #00bcd4;
+    box-shadow: 0 0 8px rgba(0, 188, 212, 0.6);
+    z-index: 2;
+}
