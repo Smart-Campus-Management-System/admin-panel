@@ -4,56 +4,205 @@ import Header from "../Header";
 import "./styles/DashboardOverview.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { color } from "framer-motion";
 
 const DashboardOverview = () => {
     const [adminName, setAdminName] = useState("");
-    const stats = [
-        { title: "Total Tutors", count: 56, icon: "👩‍🏫", color: "#4caf50" },
-        { title: "Total Students", count: 120, icon: "👩‍🎓", color: "#2196f3" },
-        { title: "Subjects Offered", count: 20, icon: "📚", color: "#ff9800" },
-        { title: "Pending Approvals", count: 5, icon: "⏳", color: "#f44336" },
-    ];
+    const [statsData, setStatsData] = useState([]);
+    const [recentActivities, setRecentActivities] = useState([]);
+    const [upcomingActivities, setUpcomingActivities] = useState([]);
+    const [upcomingEvents, setUpcomingEvents] = useState([]);
+    const [notifications, setNotifications] = useState([]);
 
-    const recentActivities = [
-        { id: 1, activity: "New student registered", time: "2 hours ago", icon: "🔔" },
-        { id: 2, activity: "Tutor uploaded course material", time: "5 hours ago", icon: "📤" },
-        { id: 3, activity: "Course updated", time: "Yesterday", icon: "✏️" },
-    ];
-
-    const upcomingActivities = [
-        { id: 1, activity: "Weekly tutor meeting", time: "Tomorrow, 9:00 AM", icon: "👥" },
-        { id: 2, activity: "Course registration deadline", time: "3 days left", icon: "📅" },
-        { id: 3, activity: "Platform maintenance", time: "Next week", icon: "🔧" },
-    ];
-
-    const upcomingEvents = [
-        { id: 1, event: "Math Workshop", date: "2025-03-25", time: "10:00 AM", location: "Room 101" },
-        { id: 2, event: "Science Fair", date: "2025-03-30", time: "2:00 PM", location: "Main Hall" },
-    ];
-
-    const notifications = [
-        { id: 1, message: "System maintenance scheduled", status: "Important", icon: "⚠️" },
-        { id: 2, message: "New course available: AI Basics", status: "Info", icon: "ℹ️" },
-    ];
+    // const notifications = [
+    //     { id: 1, message: "System maintenance scheduled", status: "Important", icon: "⚠️" },
+    //     { id: 2, message: "New course available: AI Basics", status: "Info", icon: "ℹ️" },
+    // ];
 
 
     const fetchAdminDetails = async () => {
         try {
-            const response = await axios.get("http://localhost:4000/api/v1/auth/admin", {
-                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-            });
-            if (response.data && response.data.firstName) {
-                setAdminName(response.data.firstName);
-            } else {
-                console.warn("Admin name not found in response data");
-            }
+            // const response = await axios.get("http://localhost:4000/api/v1/auth/admin", {
+            //     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            // });
+            // if (response.data && response.data.firstName) {
+            //     setAdminName(response.data.firstName);
+            // } else {
+            //     console.warn("Admin name not found in response data");
+            // }
         } catch (error) {
             console.error("Error fetching admin details:", error);
         }
     };
+
+    const fetchDashboardOverview = async () => {
+        try {
+            const response = await axios.get("http://localhost:4000/api/v1/tutor/count");
+            const json = {
+                title: 'Total Tutors',
+                count: response.data.data,
+                icon: '👩‍🏫',
+                color: '#4caf50'
+            };
+
+            setStatsData(prev => {
+                const exists = prev.some(item => item.title === json.title);
+                if (exists) return prev;
+                return [...prev, json];
+            });
+
+            // ==========================
+
+            const response1 = await axios.get("http://localhost:4000/api/v1/student/count");
+            const json1 = {
+                title: 'Total Students',
+                count: response1.data.data,
+                icon: '👩‍🎓',
+                color: '#2196f3'
+            };
+            setStatsData(prev => {
+                const exists = prev.some(item => item.title === json1.title);
+                if (exists) return prev;
+                return [...prev, json1];
+            });
+
+            // ==========================
+
+            const response2 = await axios.get("http://localhost:4000/api/v1/sections/count/all");
+            const json2 = {
+                title: 'Subjects Offered',
+                count: response2.data.data,
+                icon: '📚',
+                color: '#ff9800',
+            }
+
+            setStatsData(prev => {
+                const exists = prev.some(item => item.title === json2.title);
+                if (exists) return prev;
+                return [...prev, json2];
+            });
+
+            // ===========================
+
+            const response3 = await axios("http://localhost:4000/api/v1/requests/count/all")
+            const json3 = {
+                title: 'Pending Approvals',
+                count: response3.data.data,
+                icon: '⏳',
+                color: '#f44336'
+            }
+
+            setStatsData(prev => {
+                const exists = prev.some(item => item.title === json3.title);
+                if (exists) return prev;
+                return [...prev, json3];
+            })
+
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const fetchActivities = async () => {
+        try {
+            const res = await axios.get("http://localhost:4000/api/v1/events/recent")
+
+            res.data.data.forEach(item => {
+                let json = {
+                    id: item._id,
+                    activity: item.description,
+                    time: item.start,
+                    icon: '🔔'
+                };
+                setRecentActivities(prev => {
+                    const exists = prev.some(activity => activity.id === json.id);
+                    if (exists) return prev;
+                    return [...prev, json];
+                });
+            });
+
+            // =====================================
+
+            const res1 = await axios.get("http://localhost:4000/api/v1/events/future")
+
+            res1.data.data.forEach(item => {
+                let json = {
+                    id: item._id,
+                    activity: item.description,
+                    time: item.start,
+                    icon: '🔔'
+                };
+                setUpcomingActivities(prev => {
+                    const exists = prev.some(activity => activity.id === json.id);
+                    if (exists) return prev;
+                    return [...prev, json];
+                });
+            });
+
+        } catch (error) {
+            console.log('====================================');
+            console.log(error);
+            console.log('====================================');
+        }
+    }
+
+    const fetchUpcomingEvents = async () => {
+        try {
+            const response = await axios.get("http://localhost:4000/api/v1/events/all")
+            response.data.forEach(item => {
+                let json = {
+                    id: item._id,
+                    activity: item.description,
+                    title: item.title,
+                    start: item.start,
+                    end: item.end,
+                };
+                setUpcomingEvents(prev => {
+                    const exists = prev.some(activity => activity.id === json.id);
+                    if (exists) return prev;
+                    return [...prev, json];
+                });
+            });
+        } catch (error) {
+            console.log(error);
+
+        }
+    }
+
+    const fetchNotification = async () => {
+        try {
+            const response = await axios.get("http://localhost:4000/api/v1/notifications/all")
+            response.data.data.forEach(item=>{
+                let json = {
+                    id: item._id,
+                    message: item.message,
+                    status: item.status,
+                    icon: '🔔'
+                };
+                setNotifications(prev => {
+                    const exists = prev.some(activity => activity.id === json.id)
+                    if(exists) return prev;
+                    return [...prev, json];
+                })
+            })
+        } catch (error) {
+            console.log(error);
+
+        }
+    }
+
     useEffect(() => {
         fetchAdminDetails();
+        fetchDashboardOverview();
+        fetchActivities();
+        fetchUpcomingEvents();
+        fetchNotification();
     }, []);
+
+    useEffect(() => {
+        console.log("Updated notification:", notifications);
+    }, [statsData, recentActivities, upcomingActivities, upcomingEvents, notifications]);
+
 
     return (
         <div className="main">
@@ -65,7 +214,7 @@ const DashboardOverview = () => {
 
                 {/* Stats Section - Equal width cards */}
                 <div className="stats-container">
-                    {stats.map((stat, index) => (
+                    {statsData.map((stat, index) => (
                         <div key={index} className="stat-card" style={{ borderTopColor: stat.color }}>
                             <div className="stat-content">
                                 <div className="stat-icon">{stat.icon}</div>
@@ -142,29 +291,28 @@ const DashboardOverview = () => {
                 <div className="widget events-widget">
                     <div className="widget-header">
                         <h3 className="widget-title">Upcoming Events</h3>
-                        <button className="view-all-btn">Add Event</button>
                     </div>
                     <div className="responsive-table-container">
                         <table className="widget-table">
                             <thead>
-                            <tr>
-                                <th>Event</th>
-                                <th>Date</th>
-                                <th>Time</th>
-                                <th>Location</th>
-                                <th>Action</th>
-                            </tr>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                    <th>Start</th>
+                                    <th>End</th>
+                                </tr>
                             </thead>
                             <tbody>
-                            {upcomingEvents.map(event => (
-                                <tr key={event.id}>
-                                    <td><strong>{event.event}</strong></td>
-                                    <td>{event.date}</td>
-                                    <td>{event.time}</td>
-                                    <td>{event.location}</td>
-                                    <td><button className="action-btn">Details</button></td>
-                                </tr>
-                            ))}
+                                {upcomingEvents.map(event => (
+                                    <tr key={event.id}>
+                                        <td><strong>{event.id}</strong></td>
+                                        <td>{event.title}</td>
+                                        <td>{event.activity}</td>
+                                        <td>{event.start}</td>
+                                        <td>{event.end}</td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>
